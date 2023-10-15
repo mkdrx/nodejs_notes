@@ -9,7 +9,7 @@ const processRequest = (req, res) => {
   if (req.url === '/') {
     res.end('<h1>My web</h1>')
   } else if (req.url === '/some-img.png') {
-    fs.readFile('./placa.png', (err, data) => {
+    fs.readFile('./some-img.png', (err, data) => {
       if (err) {
         res.statusCode = 500
         res.end('<h1>500 Internal Server Error</h1>')
