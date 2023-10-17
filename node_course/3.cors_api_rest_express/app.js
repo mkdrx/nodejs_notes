@@ -2,6 +2,7 @@ const express = require('express')
 // To create IDs
 const crypto = require('node:crypto')
 const movies = require('./movies.json')
+const { validateMovie } = require('./schemas/movies')
 
 const app = express()
 app.use(express.json())
@@ -29,17 +30,18 @@ app.get('/movies/:id', (req, res) => {
 })
 
 app.post('/movies', (req, res) => {
-  const { title, genre, year, director, duration, rate, poster } = req.body
+  // Validate
+  const result = validateMovie(req.body)
 
+  if (result.error) {
+    // Could also use 422
+    return res.status(400).json({ error: JSON.parse(result.error.message) })
+  }
+
+  // What we'll do in DB
   const newMovie = {
     id: crypto.randomUUID(),
-    title,
-    genre,
-    year,
-    director,
-    duration,
-    rate: rate ?? 0,
-    poster,
+    ...result.data,
   }
 
   // This would not be REST since we are saving the state into memory
