@@ -1,13 +1,17 @@
 const express = require('express')
 // To create IDs
 const crypto = require('node:crypto')
+const cors = require('cors')
 const movies = require('./movies.json')
 const { validateMovie, validatePartialMovie } = require('./schemas/movies')
 
 const app = express()
 app.use(express.json())
-
+app.use(cors())
 app.disable('x-powered-by')
+
+// With methods like PUT/PATCH/DELETE we require:
+// CORS PRE-Flight --> OPTIONS
 
 // Get all movies
 app.get('/movies', (req, res) => {
@@ -52,6 +56,18 @@ app.post('/movies', (req, res) => {
   res.status(201).json(newMovie) // updates client's cache
 })
 
+// DELETE
+app.delete('/movies/:id', (req, res) => {
+  const { id } = req.params
+  const movieIndex = movies.findIndex((movie) => movie.id === id)
+  if (movieIndex === -1)
+    return res.status(404).json({ message: 'Movie not found' })
+
+  movies.splice(movieIndex, 1)
+
+  return res.json({ message: 'Movie deleted' })
+})
+
 // PATCH
 app.patch('/movies/:id', (req, res) => {
   const { id } = req.params
@@ -74,6 +90,17 @@ app.patch('/movies/:id', (req, res) => {
 
   return res.json(updateMovie)
 })
+
+// Code below skipped after using cors dependency
+/* // OPTIONS -> added for DELETE
+app.options('/movies/:id', (req, res) => {
+  // CORS and allowed methods
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE')
+
+  // To send the petition
+  res.send()
+}) */
 
 const PORT = process.env.PORT ?? 1234
 
